@@ -38,7 +38,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def on_join(self, serv, ev):
         if NickMask(ev.source).nick != self._username: return
-        print(f'Channel joined', serv, ev)
+        print(f'Channel joined')
         tasks_start(self)
 
     def on_pubmsg(self, serv, ev):
