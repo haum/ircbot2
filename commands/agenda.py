@@ -21,7 +21,7 @@ def help(bot, msg):
     bot.msg('!agenda ls [all]: Lister les derniers evènements')
 
 def command(bot, msg):
-    if msg == '': msg = '-'
+    if msg == '': msg = 'ls'
     cmd = msg.split()[0]
     if cmd == 'add': cmd_add(bot, msg)
     elif cmd == 'rm': cmd_rm(bot, msg)
