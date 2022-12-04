@@ -3,7 +3,7 @@
 import random
 import re
 import sqlite3
-from datetime import date
+from datetime import date, datetime
 
 dbpath = '_website/agenda.sqlite'
 seances_messages = (
@@ -88,8 +88,14 @@ def cmd_ls(bot, msg, limit=0):
 
     bot.msg('(id, date, titre, lieu, description)')
     db = sqlite3.connect(dbpath)
-    print(dbpath, db)
     for row in db.cursor().execute(query):
+        try:
+            sql_date = row[3].split(' ')
+            d = sql_date[0].split('/') + sql_date[1].split(':')
+            py_date = datetime(int(d[2]), int(d[1]), int(d[0]), int(d[3]), int(d[4]))
+            if py_date < datetime.now(): break
+        except:
+            pass
         bot.msg(str(row))
     db.close()
 
