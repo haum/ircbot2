@@ -90,7 +90,7 @@ def cmd_ls(bot, msg, limit=0):
     db = sqlite3.connect(dbpath)
     for row in db.cursor().execute(query):
         try:
-            sql_date = row[3].split(' ')
+            sql_date = row[1].split(' ')
             d = sql_date[0].split('/') + sql_date[1].split(':')
             py_date = datetime(int(d[2]), int(d[1]), int(d[0]), int(d[3]), int(d[4]))
             if py_date < datetime.now(): break
