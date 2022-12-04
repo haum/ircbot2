@@ -26,6 +26,7 @@ def command(bot, msg):
     if cmd == 'add': cmd_add(bot, msg)
     elif cmd == 'rm': cmd_rm(bot, msg)
     elif cmd == 'ls': cmd_ls(bot, msg)
+    elif cmd == 'help': help(bot, '')
     else: bot.msg('ne comprends pas la commande pour l\'agenda.', True)
 
 add_re = re.compile(r'^add\s+'
