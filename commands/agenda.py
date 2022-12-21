@@ -38,7 +38,7 @@ add_re = re.compile(r'^add\s+'
     '(.*)$')
 
 @priviledged
-def cmd_add(bot, msg):
+def cmd_add(bot, msg, is_privileged):
     # add 8/11/2022 16:40 "Titre" "Lieu" Description longue
     # add 8/11/2022 16:40 "Titre" "Lieu"
     # add 8/11/2022 16:40 "Titre"
@@ -66,10 +66,10 @@ def cmd_add(bot, msg):
         (date, title, location, description))
     db.commit()
     db.close()
-    cmd_ls(bot, '', 1)
+    cmd_ls(bot, '', is_privileged, 1)
 
 @priviledged
-def cmd_rm(bot, msg):
+def cmd_rm(bot, msg, is_privileged):
     try:
         id = int(msg.split()[1])
     except:
@@ -81,7 +81,7 @@ def cmd_rm(bot, msg):
     db.close()
     bot.msg(f'agenda: entrée #{id} retirée')
 
-def cmd_ls(bot, msg, limit=0):
+def cmd_ls(bot, msg, is_privileged, limit=0):
     query = 'SELECT rowid, date, titre, lieu, description FROM agenda WHERE status=1 ORDER BY rowid DESC'
     ms = msg.split()
     if limit > 0:
