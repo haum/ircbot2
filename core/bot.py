@@ -14,6 +14,7 @@ class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self, username, password, chan, server, port):
         print(f'Connection to {chan} on {server}:{port} as {username} with{"" if password else "out"} password')
         super().__init__([(server, port)], username, username)
+        self.reactor.add_global_handler("all_events", self._log_events)
         self._serv = None
         self._username = username
         self._password = password
@@ -28,6 +29,10 @@ class Bot(irc.bot.SingleServerIRCBot):
                 self._commands[n] = module
             else:
                 print(f'`{n}` command has no `command` function with exactly two arguments', file=sys.stderr)
+
+    def _log_events(self, connection, event):
+        if event.type not in ('all_raw_messages', 'ping', 'pubmsg'):
+            print('[event]', event)
 
     def on_welcome(self, serv, ev):
         print(f'Connected, join {self._chan}')
