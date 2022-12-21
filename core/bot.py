@@ -9,6 +9,7 @@ import irc.bot
 from irc.client import NickMask
 
 from .tasks import tasks_start
+from .permissions import PermissionException
 
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self, username, password, chan, server, port):
@@ -25,10 +26,10 @@ class Bot(irc.bot.SingleServerIRCBot):
     def _init_commands(self):
         for _,n,_ in pkgutil.iter_modules(['commands']):
             module = importlib.import_module('commands.' + n)
-            if module.command and len(signature(module.command).parameters) == 2:
+            if module.command and len(signature(module.command).parameters) == 3:
                 self._commands[n] = module
             else:
-                print(f'`{n}` command has no `command` function with exactly two arguments', file=sys.stderr)
+                print(f'`{n}` command has no `command` function with exactly three arguments', file=sys.stderr)
 
     def _log_events(self, connection, event):
         if event.type not in ('all_raw_messages', 'ping', 'pubmsg'):
@@ -53,9 +54,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         if message[0] != '!': return
 
         chan = self.channels[self._chan]
-        if not (chan.is_voiced(nick) or chan.is_halfop(nick) or chan.is_oper(nick)):
-            self.msg(f"n'exécute pas les ordres de {nick}", True)
-            return
+        is_privileged = chan.is_voiced(nick) or chan.is_halfop(nick) or chan.is_oper(nick)
 
         message_split = message[1:].split()
         cmd = message_split[0]
@@ -77,7 +76,10 @@ class Bot(irc.bot.SingleServerIRCBot):
             self.msg(f'ne comprend pas la commande `!{cmd}`', True)
             return
 
-        self._commands[cmd].command(self, message[len(cmd)+1:].strip())
+        try:
+            self._commands[cmd].command(self, message[len(cmd)+1:].strip(), is_privileged)
+        except PermissionException:
+            self.msg(f"n'exécute pas les ordres de {nick}", True)
 
     def msg(self, msg, me=False):
         if not self._serv: return

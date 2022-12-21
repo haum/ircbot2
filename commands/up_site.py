@@ -3,12 +3,15 @@
 import subprocess
 import sys
 from threading import Thread
+from core.permissions import priviledged
 
 def help(bot, msg):
     bot.msg('!up_site: Update website from repo')
 
 worker = None
-def command(bot, msg):
+
+@priviledged
+def command(bot, msg, is_privileged):
     global worker
     if worker and worker.is_alive():
         bot.msg('est en train de reconstruire le site.', True)

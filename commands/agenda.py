@@ -4,6 +4,7 @@ import random
 import re
 import sqlite3
 from datetime import date, datetime
+from core.permissions import priviledged
 
 dbpath = '_website/agenda.sqlite'
 seances_messages = (
@@ -20,12 +21,12 @@ def help(bot, msg):
     bot.msg('!agenda rm <id>: Retirer un évènement')
     bot.msg('!agenda ls [all]: Lister les derniers evènements')
 
-def command(bot, msg):
+def command(bot, msg, is_privileged):
     if msg == '': msg = 'ls'
     cmd = msg.split()[0]
-    if cmd == 'add': cmd_add(bot, msg)
-    elif cmd == 'rm': cmd_rm(bot, msg)
-    elif cmd == 'ls': cmd_ls(bot, msg)
+    if cmd == 'add': cmd_add(bot, msg, is_privileged)
+    elif cmd == 'rm': cmd_rm(bot, msg, is_privileged)
+    elif cmd == 'ls': cmd_ls(bot, msg, is_privileged)
     elif cmd == 'help': help(bot, '')
     else: bot.msg('ne comprends pas la commande pour l\'agenda.', True)
 
@@ -36,6 +37,7 @@ add_re = re.compile(r'^add\s+'
     '("([^"]+)")?\s*'
     '(.*)$')
 
+@priviledged
 def cmd_add(bot, msg):
     # add 8/11/2022 16:40 "Titre" "Lieu" Description longue
     # add 8/11/2022 16:40 "Titre" "Lieu"
@@ -66,6 +68,7 @@ def cmd_add(bot, msg):
     db.close()
     cmd_ls(bot, '', 1)
 
+@priviledged
 def cmd_rm(bot, msg):
     try:
         id = int(msg.split()[1])
