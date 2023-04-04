@@ -30,6 +30,7 @@ def update_thread_run(bot):
     photosdir = '/www/photos.haum.org/albums'
     thumbsdir = "/www/photos.haum.org/thumbs"
     smalldir = "/www/photos.haum.org/small"
+    globalindex = "/www/photos.haum.org/index.html"
     metadatafile = '_data.json'
     photoext = ('.jpg', '.jpeg', '.png')
 
@@ -178,7 +179,7 @@ def update_thread_run(bot):
             if os.path.isdir(photosdir + '/' + album):
                 albums.append(getMetadata(album))
 
-        f = open("index.html", "w")
+        f = open(globalindex, "w")
         f.write("""<!DOCTYPE html>
     <html>
         <head>
