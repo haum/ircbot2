@@ -27,10 +27,14 @@ def update_thread_run(bot):
     from datetime import datetime
     from PIL import Image
 
-    photosdir = '/www/photos.haum.org/albums'
-    thumbsdir = "/www/photos.haum.org/thumbs"
-    smalldir = "/www/photos.haum.org/small"
-    globalindex = "/www/photos.haum.org/index.html"
+    wwwpath = '/www/photos.haum.org/'
+    photosdirname = 'albums'
+    photosdir = wwwpath + photosdirname
+    thumbsdirname = "thumbs"
+    thumbsdir = wwwpath + thumbsdirname
+    smalldirname = "small"
+    smalldir = wwwpath + smalldirname
+    globalindex = wwwpath + 'index.html'
     metadatafile = '_data.json'
     photoext = ('.jpg', '.jpeg', '.png')
 
@@ -217,7 +221,7 @@ def update_thread_run(bot):
         for album in sorted(albums, key=lambda x: x['date'], reverse=True):
             print(album)
             create_album_page(album['album'])
-            f.write('           <li><a href="' + photosdir + '/' + album['album'] + '/"><div><img src="' + thumbsdir + '/' + album['album'] + '/' + album['thumb'] + '" /></div><div>' + html.escape(album['title']) + '</div></a></li>\n')
+            f.write('           <li><a href="' + photosdirname + '/' + album['album'] + '/"><div><img src="' + thumbsdirname + '/' + album['album'] + '/' + album['thumb'] + '" /></div><div>' + html.escape(album['title']) + '</div></a></li>\n')
         f.write("""        </ul>
         </body>
     </html>
