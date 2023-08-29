@@ -103,7 +103,7 @@ def update_thread_run(bot):
             os.makedirs(thumbsdir + '/' + album, exist_ok=True)
             print(photosdir+'/'+album+'/'+photo)
             im = Image.open(photosdir+'/'+album+'/'+photo)
-            im.thumbnail((200,200), Image.ANTIALIAS)
+            im.thumbnail((200,200), Image.LANCZOS)
             im.save(thumbsdir+'/'+album+'/'+photo)
             print("Thumbnail " + album + '/' + photo)
 
@@ -117,7 +117,7 @@ def update_thread_run(bot):
         if os.path.splitext(photo)[1].lower() in photoext and recreate:
             os.makedirs(smalldir + '/' + album, exist_ok=True)
             im = Image.open(photosdir+'/'+album+'/'+photo)
-            im.thumbnail((640,640), Image.ANTIALIAS)
+            im.thumbnail((640,640), Image.LANCZOS)
             im.save(smalldir+'/'+album+'/'+photo)
             print("Make small image " + album + '/' + photo)
 
@@ -127,7 +127,13 @@ def update_thread_run(bot):
         for photo in os.listdir(photosdir + '/' + album):
             if os.path.splitext(photo)[1].lower() in photoext:
                 date = find_date_photo(album, photo)
-                photos.append({'photo': photo, 'date': date})
+                p = {'photo': photo, 'date': date, 'preset': 'mono'}
+                parts = photo.replace('_', '.').replace('-', '.').split('.')
+                if 'sbs' in parts:
+                    p['preset'] = 'sbs'
+                if 'mp4' in parts:
+                    p['video'] = True
+                photos.append(p)
 
         f = open(photosdir + '/' + album + "/index.html", "w")
         f.write("""<!DOCTYPE html>
@@ -143,15 +149,28 @@ def update_thread_run(bot):
         f.write('		<meta property="og:description" content="' + album_metadata['desc'] + '" />\n')
         f.write('		<title>Albums: ' + album_metadata['title'] + '</title>\n')
         f.write("""
-            <script type="text/javascript" src="../../_unitegallery/js/jquery-11.0.min.js"></script>
-            <script type="text/javascript" src="../../_unitegallery/js/unitegallery.min.js"></script>
-            <link rel="stylesheet" href="../../_unitegallery/css/unite-gallery.css" type="text/css" />
-            <script type="text/javascript" src="../../_unitegallery/themes/tiles/ug-theme-tiles.js"></script>
             <style>
                 body { background: #333; color: #fff; }
                 h1 { text-align: center; color: #eee; }
                             a { color: #aaa; }
-                            #gallery { margin-top: 10px; }
+			.thumbnails {
+				margin-top: 10px;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: space-around;
+			}
+			.thumbnails::after {
+				content: "";
+				flex: auto;
+			}
+			img {
+				border: 4px solid black;
+				align-self: center;
+				margin: 5px;
+			}
+			img.active {
+				border-color: #0af;
+			}
             </style>
         </head>
 
@@ -161,17 +180,46 @@ def update_thread_run(bot):
         f.write('           <a href="../..">&lt; Retour aux albums</a>\n');
         if album_metadata['desc']:
             f.write('		<p>' + album_metadata['desc'] + '</p>\n')
-        f.write('		<div id="gallery">\n')
+        f.write("""		<script type="text/javascript">
+			var last_active = 0;
+			var imgs = null;
+			window.addEventListener('message', function(e) {
+				if (!imgs)
+					imgs = document.getElementsByClassName('thumbnails')[0].getElementsByTagName('img');
+				if (e.origin == 'https://stereopix.net') {
+					if (e.data.type == 'viewerReady') {
+						var json = { "media": [] };
+						for (var i = 0; i < imgs.length; i++) {
+							json.media.push({ "url": (new URL(imgs[i].dataset.image, document.location.href)).href, "preset": imgs[i].dataset.preset });
+							imgs[i]['data-position'] = i;
+							imgs[i].addEventListener('click', function(click_event) {
+								click_event.preventDefault();
+								e.source.postMessage({ 'stereopix_action': 'goto', 'position': this['data-position'] }, 'https://stereopix.net');
+							});
+						}
+						e.source.postMessage({ 'stereopix_action': 'list_add_json', 'media': json }, 'https://stereopix.net');
+					} else if (e.data.type == 'mediumChanged') {
+						imgs[last_active].classList.remove('active');
+						last_active = e.data.position;
+						imgs[last_active].classList.add('active');
+					}
+				}
+			});
+		</script>
+
+		<iframe title="Stereoscopic (3D) photo viewer" id="stereopix_viewer"
+			style="width: 100%; height: 960px; max-height: 100vh; max-width: 100vw; border: 2px solid black; margin: 8px 0;" 
+			allowfullscreen="yes" allowvr="yes" allow="fullscreen;xr-spatial-tracking;accelerometer;gyroscope" 
+			src="https://stereopix.net/viewer:embed/"></iframe>
+
+            <p style="color:#9cf"><b>Note:</b> <i>Certaines photos du HAUM sont en relief, c'est pourquoi la visionneuse de Stereopix est utilisée. Si vous n'avez pas de dispositif pour observer en relief, choisissez le mode d'affichage "Single view left".</i></p>
+                """)
+        f.write('		<div class="thumbnails">\n')
         for photo in sorted(photos, key=lambda x: x['date'], reverse=True):
             create_thumbnail(album, photo['photo'])
             create_smallimg(album, photo['photo'])
-            f.write('           <img src="../../thumbs/' + album + '/' + photo['photo'] + '" data-image="' + photo['photo'] + '" alt="" data-description="" />\n')
+            f.write('           <img src="../../thumbs/' + album + '/' + photo['photo'] + '" data-image="' + photo['photo'] + '" data-preset="' + photo['preset'] + '" alt="" />\n')
         f.write("""		</div>
-            <script type="text/javascript">
-                jQuery(document).ready(function(){
-                    jQuery("#gallery").unitegallery();
-                });
-            </script>
         </body>
     </html>
     """) 
@@ -193,17 +241,21 @@ def update_thread_run(bot):
                 body { background: #333; color: #fff; }
                 h1 { text-align: center; color: #eee; }
                 a { color: #aaa; text-decoration: none; }
-                li {
-                  float: left;
+                .albums {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                }
+                .albums > div {
+                  width: 440px;
                   height: 210px;
                   border: solid 1px black;
                   background: #222;
                   padding: 10px;
                   margin: 10px;
                   text-align: center;
-                  list-style-type: none;
                 }
-                li div {
+                .albums > div div {
                   width: 210px;
                   height: 210px;
                   margin: 0;
@@ -216,13 +268,13 @@ def update_thread_run(bot):
         </head>
         <body>
             <h1>Albums</h1>
-            <ul>
+            <div class="albums">
     """)
         for album in sorted(albums, key=lambda x: x['date'], reverse=True):
             print(album)
             create_album_page(album['album'])
-            f.write('           <li><a href="' + photosdirname + '/' + album['album'] + '/"><div><img src="' + thumbsdirname + '/' + album['album'] + '/' + album['thumb'] + '" /></div><div>' + html.escape(album['title']) + '</div></a></li>\n')
-        f.write("""        </ul>
+            f.write('           <div><a href="' + photosdirname + '/' + album['album'] + '/"><div><img src="' + thumbsdirname + '/' + album['album'] + '/' + album['thumb'] + '" /></div><div>' + html.escape(album['title']) + '</div></a></div>\n')
+        f.write("""        </div>
         </body>
     </html>
     """) 
