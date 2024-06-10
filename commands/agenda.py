@@ -56,7 +56,7 @@ def cmd_add(bot, msg, is_privileged):
     hs = hour.split(':') if hour else ['21', '00']
     py_date = datetime(int(ds[2]), int(ds[1]), int(ds[0]), int(hs[0]), int(hs[1]))
     date = py_date.isoformat().replace('T', ' ')[:-3]
-    if title is None: title = ' Session bidouille'
+    if title is None: title = 'Session bidouille'
     if location is None: location = 'Local du HAUM'
     if description == '': description = random.choice(seances_messages)
 
