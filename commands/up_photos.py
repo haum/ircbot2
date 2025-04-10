@@ -190,7 +190,10 @@ def update_thread_run(bot):
 					if (e.data.type == 'viewerReady') {
 						var json = { "media": [] };
 						for (var i = 0; i < imgs.length; i++) {
-							json.media.push({ "url": (new URL(imgs[i].dataset.image, document.location.href)).href, "preset": imgs[i].dataset.preset });
+							if ('video' in imgs[i].dataset)
+								json.media.push({ "url": (new URL(imgs[i].dataset.video, document.location.href)).href, "preset": imgs[i].dataset.preset, "video": true });
+							else
+								json.media.push({ "url": (new URL(imgs[i].dataset.image, document.location.href)).href, "preset": imgs[i].dataset.preset });
 							imgs[i]['data-position'] = i;
 							imgs[i].addEventListener('click', function(click_event) {
 								click_event.preventDefault();
