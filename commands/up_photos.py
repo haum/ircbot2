@@ -127,7 +127,7 @@ def update_thread_run(bot):
         for photo in os.listdir(photosdir + '/' + album):
             if os.path.splitext(photo)[1].lower() in photoext:
                 date = find_date_photo(album, photo)
-                p = {'photo': photo, 'date': date, 'preset': 'mono'}
+                p = {'photo': photo, 'date': date, 'preset': 'mono', 'video': False}
                 parts = photo.replace('_', '.').replace('-', '.').split('.')
                 if 'sbs' in parts:
                     p['preset'] = 'sbs'
@@ -221,7 +221,9 @@ def update_thread_run(bot):
         for photo in sorted(photos, key=lambda x: x['date'], reverse=True):
             create_thumbnail(album, photo['photo'])
             create_smallimg(album, photo['photo'])
-            f.write('           <img src="../../thumbs/' + album + '/' + photo['photo'] + '" data-image="' + photo['photo'] + '" data-preset="' + photo['preset'] + '" alt="" />\n')
+            imgtype = 'video' if photo['video'] else 'image'
+            imgpath = photo['photo'].replace('.mp4.jpg', '.mp4') if photo['video'] else photo['photo']
+            f.write(f'''           <img src="../../thumbs/{ album }/{ photo['photo'] }" data-{ imgtype }="{ imgpath }" data-preset="{ photo['preset'] }" alt="" />\n''')
         f.write("""		</div>
         </body>
     </html>
