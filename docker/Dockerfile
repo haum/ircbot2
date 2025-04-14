@@ -1,6 +1,5 @@
 FROM alpine:3.16
 
-RUN apk add --no-cache git python3 py3-pip py3-pillow make rsync musl-locales \
- && pip install irc pelican icalendar piexif
+RUN apk add --no-cache git make rsync curl musl-locales tzdata
 
 CMD ["/app/run.sh"]
