@@ -31,11 +31,11 @@ def command(bot, msg, is_privileged):
     else: bot.msg('ne comprends pas la commande pour l\'agenda.', True)
 
 add_re = re.compile(r'^add\s+'
-    '(\d{1,2}\/\d{2}(\/\d{2,4})?)\s*'
-    '(\d{1,2}:\d{2})?\s*'
-    '("([^"]+)")?\s*'
-    '("([^"]+)")?\s*'
-    '(.*)$')
+    r'(\d{1,2}\/\d{2}(\/\d{2,4})?)\s*'
+    r'(\d{1,2}:\d{2})?\s*'
+    r'("([^"]+)")?\s*'
+    r'("([^"]+)")?\s*'
+    r'(.*)$')
 
 @priviledged
 def cmd_add(bot, msg, is_privileged):
