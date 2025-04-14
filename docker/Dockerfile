@@ -1,5 +1,7 @@
-FROM alpine:3.16
+FROM ubuntu:24.04
 
-RUN apk add --no-cache git make rsync curl musl-locales tzdata
+RUN apt-get update && apt-get install -y locales tzdata git make rsync curl && rm -rf /var/lib/apt/lists/* \
+	&& localedef -i fr_FR -c -f UTF-8 -A /usr/share/locale/locale.alias fr_FR.UTF-8
+ENV LANG fr_FR.utf8
 
 CMD ["/app/run.sh"]

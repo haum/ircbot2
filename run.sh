@@ -1,6 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-export MUSL_LOCPATH=/usr/share/i18n/locales/musl
 export LC_ALL=fr_FR.UTF-8
 
 if [ ! -f /root/.local/bin/uv ]
