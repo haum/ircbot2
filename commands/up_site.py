@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import fcntl
 import subprocess
 import sys
 from threading import Thread
@@ -34,6 +35,13 @@ def update_thread_run(bot):
         bot.msg('Erreur lors du clonage du site.')
         return
 
+    # Lock shared with the Matrix bot (haumManager), which publishes the same
+    # site from its own container: two concurrent builds would clash.
+    with open('_website/.build.lock', 'a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        update_site(bot)
+
+def update_site(bot):
     # Update website engine
     if not shrun('cd _website && git pull'):
         bot.msg('Erreur lors de la mise à jour du moteur du site.')
