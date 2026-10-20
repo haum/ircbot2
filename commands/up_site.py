@@ -57,8 +57,9 @@ def update_site(bot):
         bot.msg('Et voilà, tu as encore cassé le site !')
         return
 
-    # Rsync output
-    if not shrun('cd _website && rsync -ac --delete ./output/ /www/haum.org/'):
+    # Rsync output (spacestatus is written by the Matrix bot's « !local »,
+    # not by the build: keep it)
+    if not shrun('cd _website && rsync -ac --delete --filter="P /spacestatus" ./output/ /www/haum.org/'):
         bot.msg('Erreur lors de la copie finale du site.')
         return
 
